@@ -77,6 +77,7 @@ class FreedomPop(object):
         elif method == 'POST':
             response = requests.post(url, params=params, auth=auth,
                                      data=data, files=files)
+        utils.logger.info(response.content.decode('utf8'))
 
         utils.logger.info('Request finished.')
 
@@ -132,18 +133,22 @@ class FreedomPop(object):
         return msg
 
     def action_get_sms(self, args):
-        return 'TODO'
-
         endpoint = '/phone/listsms'
-        endpoint
+        return self._make_request(endpoint)
 
     def action_send_sms(self, args):
-        return 'TODO'
-
         endpoint = '/phone/sendsms'
-        data = {'to_numbers': '+', 'message_body': ''}
+        number, body = args[:1], ' '.join(args[1:])
+        data = {'to_numbers': number, 'message_body': body}
         files = {'media_file': (None, 'none')}
-        self._make_request(endpoint, method='POST', data=data, files=files)
+
+        response = self._make_request(endpoint, method='POST', data=data,
+                                      files=files)
+
+        if not response.get('groupId'):
+            return 'SMS not sent. Check the number and try again.'
+        else:
+            return 'SMS sent.'
 
 
 freedompop = FreedomPop()

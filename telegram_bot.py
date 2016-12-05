@@ -9,7 +9,7 @@ import utils
 
 
 class TelegramBot(telepot.aio.Bot):
-    HELP_MESSAGE = 'The following commands are available:\n'
+    HELP_MESSAGE = 'The following commands are available:\n\n'
     INVALID_CMD = ("I don't know what you mean by that. If you need help, " +
                    'use /help.')
     UNKNOWN_USER = "You are not allowed to use this bot.\nYour user ID is: %d"
@@ -41,7 +41,7 @@ class TelegramBot(telepot.aio.Bot):
                 return
 
             if not inc_message['text'].startswith('/'):
-                await self.send_message(inc_message, self.generate_help())
+                await self.send_message(inc_message, self.INVALID_CMD)
                 return
 
             # send a "typing..." notification
@@ -53,7 +53,13 @@ class TelegramBot(telepot.aio.Bot):
             if command in {'help', 'start'}:
                 msg = self.generate_help()
             elif command in self.handlers.keys():
-                msg = self.handlers[command]['func'](args)
+                if len(args) < self.handlers[command]['req']:
+                    msg = ('/%s requires at least %d parameters.' %
+                           (command, self.handlers[command]['req']))
+                else:
+                    msg = self.handlers[command]['func'](args)
+            else:
+                msg = self.INVALID_CMD
             await self.send_message(inc_message, msg, no_preview=True)
 
         except Exception as e:
@@ -83,9 +89,9 @@ class TelegramBot(telepot.aio.Bot):
             msg += tpl % (name, info['desc'])
         return msg
 
-    def register_handler(self, name, desc, func):
+    def register_handler(self, name, desc, func, req):
         """registers a new handler"""
-        self.handlers[name] = dict(desc=desc, func=func)
+        self.handlers[name] = dict(desc=desc, func=func, req=req)
 
     def format_name(self, message):
         """formats a "from" property into a string"""
