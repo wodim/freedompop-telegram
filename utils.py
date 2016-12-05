@@ -32,3 +32,22 @@ def b_to_mb(b):
 
 def s_to_m(s):
     return s // 60
+
+
+def zip_args(keys, values):
+    """given a list of keys and a list of values where len(values) >= len(keys)
+        zips them into a dictionary, merging the last elements of "values" into
+        one string if there are too many of them.
+
+        example: zip_args(['name', 'description'],
+                          ['submit', 'submits', 'a', 'new', 'post'])
+                 => {'name': 'submit', 'description': 'submits a new post'}
+    """
+    if len(values) < len(keys):
+        raise ValueError('not enough values to zip')
+
+    if len(values) > len(keys):
+        offset = len(keys) - 1
+        values[offset:] = [' '.join(values[offset:])]
+
+    return dict(zip(keys, values))

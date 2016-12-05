@@ -83,7 +83,7 @@ class FreedomPop(object):
 
         return json.loads(response.content.decode('utf8'))
 
-    def action_get_usage(self, args):
+    def action_get_usage(self, **kwargs):
         endpoint = '/user/usage'
         response = self._make_request(endpoint)
 
@@ -102,7 +102,7 @@ class FreedomPop(object):
 
         return msg
 
-    def action_get_balance(self, args):
+    def action_get_balance(self, **kwargs):
         endpoint = '/phone/balance'
         response = self._make_request(endpoint)
 
@@ -132,14 +132,14 @@ class FreedomPop(object):
 
         return msg
 
-    def action_get_sms(self, args):
+    def action_get_sms(self, **kwargs):
         endpoint = '/phone/listsms'
         return self._make_request(endpoint)
 
-    def action_send_sms(self, args):
+    def action_send_sms(self, **kwargs):
         endpoint = '/phone/sendsms'
-        number, body = args[:1], ' '.join(args[1:])
-        data = {'to_numbers': number, 'message_body': body}
+        destination, text = kwargs['destination'], kwargs['text']
+        data = {'to_numbers': destination, 'message_body': text}
         files = {'media_file': (None, 'none')}
 
         response = self._make_request(endpoint, method='POST', data=data,

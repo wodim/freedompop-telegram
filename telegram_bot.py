@@ -53,11 +53,14 @@ class TelegramBot(telepot.aio.Bot):
             if command in {'help', 'start'}:
                 msg = self.generate_help()
             elif command in self.handlers.keys():
-                if len(args) < self.handlers[command]['req']:
-                    msg = ('/%s requires at least %d parameters.' %
-                           (command, self.handlers[command]['req']))
+                req = self.handlers[command]['req']
+                if len(args) < len(req):
+                    msg = 'Not enough parameters for /%s.\n' % command
+                    req_args = ' '.join('<' + s + '>' for s in req)
+                    msg += 'Usage: /%s %s' % (command, req_args)
                 else:
-                    msg = self.handlers[command]['func'](args)
+                    kwargs = utils.zip_args(req, args)
+                    msg = self.handlers[command]['func'](**kwargs)
             else:
                 msg = self.INVALID_CMD
             await self.send_message(inc_message, msg, no_preview=True)
@@ -89,7 +92,7 @@ class TelegramBot(telepot.aio.Bot):
             msg += tpl % (name, info['desc'])
         return msg
 
-    def register_handler(self, name, desc, func, req):
+    def register_handler(self, name, desc, func, req=[]):
         """registers a new handler"""
         self.handlers[name] = dict(desc=desc, func=func, req=req)
 
