@@ -16,6 +16,8 @@ r_h('getsipconfig', 'get your SIP credentials',
     freedompop.action_get_sip_config)
 r_h('getcallpref', 'display preferences for incoming calls',
     freedompop.action_get_incoming_call_pref)
+r_h('setcallpref', 'set preferences for incoming calls',
+    freedompop.action_set_incoming_call_pref, ('use_premium_voice',))
 r_h('getaccountinfo', 'display account info',
     freedompop.action_get_phone_account_info)
 r_h('getphonemarket', 'display Play Store version',

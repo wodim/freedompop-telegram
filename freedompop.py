@@ -17,6 +17,7 @@ class FreedomPop(object):
 
     access_token = None
     refresh_token = None
+    push_token_status = 'unregistered'
     token_expires = 0
 
     api_base = 'https://api.freedompop.com'
@@ -59,6 +60,21 @@ class FreedomPop(object):
 
         utils.logger.info('New token obtained successfully.')
 
+    def _register_push_token(self):
+        if self.push_token_status != 'unregistered':
+            return
+        utils.logger.info('Registering this device...')
+        self.push_token_status = 'registering'
+        endpoint = '/phone/push/register/token'
+        config_params = ('deviceId', 'deviceSid', 'deviceType', 'radioType',
+                         'pushToken')
+        response = self._make_request(endpoint, config_params=config_params)
+        if response['isSuccess']:
+            utils.logger.info('Device registered successfully.')
+        else:
+            utils.logger.info("Couldn't register this device.")
+        self.push_token_status = 'registered'
+
     def _make_request(self, endpoint, params=None, method='GET', data=None,
                       files=None, config_params=None):
         if method not in {'GET', 'POST', 'PUT'}:
@@ -71,6 +87,7 @@ class FreedomPop(object):
             config_params = []
 
         self._update_token()
+        self._register_push_token()
 
         url = self.api_base + endpoint
         auth = config.FREEDOMPOP_API_USER, config.FREEDOMPOP_API_PASSWORD
@@ -81,17 +98,21 @@ class FreedomPop(object):
             params['deviceId'] = config.FREEDOMPOP_DEVICE_ID
         if 'deviceSid' in config_params:
             params['deviceSid'] = config.FREEDOMPOP_DEVICE_SID
+        if 'deviceType' in config_params:
+            params['deviceType'] = config.FREEDOMPOP_DEVICE_TYPE
         if 'radioType' in config_params:
             params['radioType'] = config.FREEDOMPOP_RADIO_TYPE
+        if 'pushToken' in config_params:
+            params['pushToken'] = config.FREEDOMPOP_PUSH_TOKEN
 
         utils.logger.info('Making a %s request to %s with "%s"...',
                           method, endpoint, params)
 
         if method == 'GET':
             response = requests.get(url, params=params, auth=auth)
-        elif method == 'POST':
-            response = requests.post(url, params=params, auth=auth,
-                                     data=data, files=files)
+        elif method == 'POST' or method == 'PUT':
+            response = requests.request(method=method, url=url, params=params,
+                                        auth=auth, data=data, files=files)
         utils.logger.info('Response: ' + response.content.decode('utf8'))
 
         utils.logger.info('Request finished.')
@@ -113,10 +134,10 @@ class FreedomPop(object):
         config_params = ('deviceId', 'deviceSid', 'radioType')
         response = self._make_request(endpoint, config_params=config_params)
 
-        msg = 'SIP data information: \n\n'
-        msg += 'Username:\n%s\n\n' % response['username']
-        msg += 'Password:\n%s\n\n' % response['password']
-        msg += 'Server:\n%s\n\n' % response['server']
+        msg = 'SIP login information:\n\n'
+        msg += 'Username:\n    %s\n' % response['username']
+        msg += 'Password:\n    %s\n' % response['password']
+        msg += 'Server:  \n    %s' % response['server']
 
         return msg
 
@@ -219,11 +240,26 @@ class FreedomPop(object):
         endpoint = '/phone/getincomingcallpref'
         response = self._make_request(endpoint)
 
-        # I have no idea of what PV is.
         if response['usePV']:
-            msg = 'PV is enabled.'
+            msg = 'Premium Voice is enabled.'
         else:
-            msg = 'PV is disabled.'
+            msg = 'Premium Voice is disabled.'
+
+        return msg
+
+    def action_set_incoming_call_pref(self, **kwargs):
+        endpoint = '/phone/setincomingcallpref'
+        try:
+            use_pv = int(kwargs['use_pv']) != 0
+        except ValueError:
+            raise FreedomPopAPIError('Invalid value for use_pv (0 or 1)')
+        params = {'usePV': use_pv}
+        response = self._make_request(endpoint, params=params, method='PUT')
+
+        if use_pv:
+            msg = 'Premium Voice is now enabled.'
+        else:
+            msg = 'Premium Voice is now disabled.'
 
         return msg
 
