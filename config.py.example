@@ -8,8 +8,10 @@ ALLOWED_USERS = 123456789, 987654321
 FREEDOMPOP_USER = ''
 FREEDOMPOP_PASSWORD = ''
 
-# device id for this client. just make something up.
-FREEDOMPOP_DEVICE_ID = 'lalala'
+# device ids for this client. just make something up.
+FREEDOMPOP_DEVICE_ID = '1234567890'
+FREEDOMPOP_DEVICE_SID = '1234567890'
+FREEDOMPOP_RADIO_TYPE = 'PHONE_TYPE_GSM'
 
 # don't touch these.
 FREEDOMPOP_API_USER = '3726328870'

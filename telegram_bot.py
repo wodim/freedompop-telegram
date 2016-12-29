@@ -11,7 +11,7 @@ import utils
 
 class TelegramBot(telepot.aio.Bot):
     HELP_MESSAGE = 'The following commands are available:\n\n'
-    INVALID_CMD = ("I don't know what you mean by that. If you need help, " +
+    INVALID_CMD = ("I don't know what you mean by that. If you need help, "
                    'use /help.')
     UNKNOWN_USER = "You are not allowed to use this bot.\nYour user ID is: %d"
 

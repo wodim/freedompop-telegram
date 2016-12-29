@@ -61,7 +61,7 @@ class FreedomPop(object):
 
     def _make_request(self, endpoint, params=None, method='GET', data=None,
                       files=None, config_params=None):
-        if method not in {'GET', 'POST'}:
+        if method not in {'GET', 'POST', 'PUT'}:
             raise ValueError('method not supported: %s' % method)
         if method != 'POST' and (data is not None or files is not None):
             raise ValueError('cannot post files/data with method %s' % method)
@@ -79,15 +79,20 @@ class FreedomPop(object):
             params['appIdVersion'] = config.FREEDOMPOP_APP_VERSION
         if 'deviceId' in config_params:
             params['deviceId'] = config.FREEDOMPOP_DEVICE_ID
+        if 'deviceSid' in config_params:
+            params['deviceSid'] = config.FREEDOMPOP_DEVICE_SID
+        if 'radioType' in config_params:
+            params['radioType'] = config.FREEDOMPOP_RADIO_TYPE
 
-        utils.logger.info('Making a %s request to %s...', method, endpoint)
+        utils.logger.info('Making a %s request to %s with "%s"...',
+                          method, endpoint, params)
 
         if method == 'GET':
             response = requests.get(url, params=params, auth=auth)
         elif method == 'POST':
             response = requests.post(url, params=params, auth=auth,
                                      data=data, files=files)
-        utils.logger.info(response.content.decode('utf8'))
+        utils.logger.info('Response: ' + response.content.decode('utf8'))
 
         utils.logger.info('Request finished.')
 
@@ -103,9 +108,9 @@ class FreedomPop(object):
 
         return ret
 
-    def action_get_sip_data(self, **kwargs):
+    def action_get_sip_config(self, **kwargs):
         endpoint = '/phone/device/config'
-        config_params = ('deviceId')
+        config_params = ('deviceId', 'deviceSid', 'radioType')
         response = self._make_request(endpoint, config_params=config_params)
 
         msg = 'SIP data information: \n\n'
@@ -115,6 +120,22 @@ class FreedomPop(object):
 
         return msg
 
+    def action_get_phone_market(self, **kwargs):
+        endpoint = '/phone/market'
+        response = self._make_request(endpoint)
+
+        # TODO: requires formatting.
+
+        return 'Not implemented yet.'
+
+    def action_get_phone_account_info(self, **kwargs):
+        endpoint = '/phone/account/info'
+        response = self._make_request(endpoint)
+
+        # TODO: requires formatting.
+
+        return 'Not implemented yet.'
+
     def action_get_usage(self, **kwargs):
         endpoint = '/user/usage'
         response = self._make_request(endpoint)
@@ -122,7 +143,7 @@ class FreedomPop(object):
         # base_bandwidth = response['baseBandwidth']
         # offer_bonus_earned = response['offerBonusEarned']
         total_limit = response['totalLimit']
-        percent_used = response['percentUsed']
+        percent_used = response['percentUsed'] * 100
         balance_remaining = response['balanceRemaining']
         #
         used = total_limit - balance_remaining
@@ -193,6 +214,18 @@ class FreedomPop(object):
             return 'SMS not sent. Check the number and try again.'
         else:
             return 'SMS sent.'
+
+    def action_get_incoming_call_pref(self, **kwargs):
+        endpoint = '/phone/getincomingcallpref'
+        response = self._make_request(endpoint)
+
+        # I have no idea of what PV is.
+        if response['usePV']:
+            msg = 'PV is enabled.'
+        else:
+            msg = 'PV is disabled.'
+
+        return msg
 
 
 freedompop = FreedomPop()
