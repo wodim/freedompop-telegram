@@ -68,6 +68,8 @@ class FreedomPop(object):
         auth = config.FREEDOMPOP_API_USER, config.FREEDOMPOP_API_PASSWORD
         params['accessToken'] = self.access_token
         params['appIdVersion'] = config.FREEDOMPOP_APP_VERSION
+        if endpoint == '/phone/device/config':
+            params['deviceId'] = config.FREEDOMPOP_DEVICE_ID
 
         utils.logger.info('Making a %s request to %s...' %
                           (method, endpoint))
@@ -83,6 +85,19 @@ class FreedomPop(object):
 
         return json.loads(response.content.decode('utf8'))
 
+    #def action_get_sip_data(self, **kwargs):
+        #need device_meid and/or deviceSid for acces it (or take it from the original app db)
+    
+        #endpoint = '/phone/device/config'
+        #
+        #response = self._make_request(endpoint)
+        #                        
+        #msg = 'SIP data information: \n\n'
+        #msg += 'Username:\n%s\n\n' % response['username']
+        #msg += 'Password:\n%s\n\n' % response['password']
+        #msg += 'Server:\n%s\n\n' % response['server']
+        #return msg
+
     def action_get_usage(self, **kwargs):
         endpoint = '/user/usage'
         response = self._make_request(endpoint)
@@ -96,9 +111,25 @@ class FreedomPop(object):
         used = total_limit - balance_remaining
 
         msg = 'Data plan usage information:\n\n'
-        msg += ('You have used %d MB (%.1f%%) out of your plan of %d MB.' %
+        msg += ('You have used %d MB (%.1f%%) out of your plan of %d MB.\n\n' %
                 (utils.b_to_mb(used), percent_used,
                  utils.b_to_mb(total_limit)))
+
+        endTime = response['endTime'] / 1000
+        timeRemaining = endTime - time.time()
+        daysRemaining = timeRemaining / 86400
+        hoursRemaining = timeRemaining % 86400 / 3600
+        minutesRemaining = timeRemaining % 3600 / 60
+        msg += ('Time until quota reset:')
+        if daysRemaining > 0:
+            msg += (' %d days' %
+                (daysRemaining))
+        if hoursRemaining > 0:
+            msg += (' %d hours' %
+                (hoursRemaining))
+        if minutesRemaining > 0:
+            msg += (' %d minutes' %
+                (minutesRemaining))
 
         return msg
 
@@ -115,16 +146,15 @@ class FreedomPop(object):
             msg += '* Price: %.2f\n' % plan['price']
             if plan.get('unlimitedVoice', False):
                 msg += '* Unlimited calls\n'
-            if plan.get('unlimitedData', False):
-                msg += '* Unlimited data\n'
-            if 'baseData' in plan:
-                msg += ('* Data: %d MB (%d remaining)\n' %
-                        (utils.b_to_mb(plan['baseData']),
-                         utils.b_to_mb(plan['balance']['remainingData'])))
-            if 'baseSeconds' in plan:
+            else:
                 msg += ('* Calls: %d min (%d min remaining)\n' %
                         (utils.s_to_m(plan['baseSeconds']),
                          plan['balance']['remainingMinutes']))
+            if plan.get('unlimitedData', False):
+                msg += '* Unlimited data\n'
+            else:
+                msg += ('* Data: %d MB remaining\n' %
+                        utils.b_to_mb(plan['balance']['remainingData']))
             if 'baseSMS' in plan:
                 msg += ('* SMS: %d (%d remaining)\n' %
                         (plan['baseSMS'], plan['balance']['remainingSMS']))
@@ -134,7 +164,13 @@ class FreedomPop(object):
 
     def action_get_sms(self, **kwargs):
         endpoint = '/phone/listsms'
-        return self._make_request(endpoint)
+        response = self._make_request(endpoint)
+        
+        msg = 'Reading sms...\n'
+        for sms in response['messages']:
+            msg += '\n\nFrom: %s\n' % sms['from']
+            msg += '%s' % sms['body']
+        return msg
 
     def action_send_sms(self, **kwargs):
         endpoint = '/phone/sendsms'
