@@ -35,7 +35,7 @@ class TelegramBot(telepot.aio.Bot):
 
             # if this user is not among the allowed ones to use the bot...
             if chat_id not in config.ALLOWED_USERS:
-                utils.logger.info('Access denied for user %d.' % chat_id)
+                utils.logger.info('Access denied for user %d.', chat_id)
                 msg = self.UNKNOWN_USER % chat_id
                 await self.send_message(inc_message, msg)
                 return
@@ -92,8 +92,11 @@ class TelegramBot(telepot.aio.Bot):
             msg += tpl % (name, info['desc'])
         return msg
 
-    def register_handler(self, name, desc, func, req=[]):
+    def register_handler(self, name, desc, func, req=None):
         """registers a new handler"""
+        if not req:
+            req = []
+
         self.handlers[name] = dict(desc=desc, func=func, req=req)
 
     def format_name(self, message):

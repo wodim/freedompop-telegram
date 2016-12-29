@@ -55,12 +55,14 @@ class FreedomPop(object):
 
         utils.logger.info('New token obtained successfully.')
 
-    def _make_request(self, endpoint, params={}, method='GET', data=None,
+    def _make_request(self, endpoint, params=None, method='GET', data=None,
                       files=None):
         if method not in {'GET', 'POST'}:
             raise ValueError('method not supported: %s' % method)
         if method != 'POST' and (data is not None or files is not None):
             raise ValueError('cannot post files/data with method %s' % method)
+        if not params:
+            params = {}
 
         self._update_token()
 
@@ -71,8 +73,7 @@ class FreedomPop(object):
         if endpoint == '/phone/device/config':
             params['deviceId'] = config.FREEDOMPOP_DEVICE_ID
 
-        utils.logger.info('Making a %s request to %s...' %
-                          (method, endpoint))
+        utils.logger.info('Making a %s request to %s...', method, endpoint)
 
         if method == 'GET':
             response = requests.get(url, params=params, auth=auth)
@@ -85,18 +86,16 @@ class FreedomPop(object):
 
         return json.loads(response.content.decode('utf8'))
 
-    #def action_get_sip_data(self, **kwargs):
-        #need device_meid and/or deviceSid for acces it (or take it from the original app db)
-    
-        #endpoint = '/phone/device/config'
-        #
-        #response = self._make_request(endpoint)
-        #                        
-        #msg = 'SIP data information: \n\n'
-        #msg += 'Username:\n%s\n\n' % response['username']
-        #msg += 'Password:\n%s\n\n' % response['password']
-        #msg += 'Server:\n%s\n\n' % response['server']
-        #return msg
+    def action_get_sip_data(self, **kwargs):
+        endpoint = '/phone/device/config'
+        response = self._make_request(endpoint)
+
+        msg = 'SIP data information: \n\n'
+        msg += 'Username:\n%s\n\n' % response['username']
+        msg += 'Password:\n%s\n\n' % response['password']
+        msg += 'Server:\n%s\n\n' % response['server']
+
+        return msg
 
     def action_get_usage(self, **kwargs):
         endpoint = '/user/usage'
@@ -120,16 +119,13 @@ class FreedomPop(object):
         daysRemaining = timeRemaining / 86400
         hoursRemaining = timeRemaining % 86400 / 3600
         minutesRemaining = timeRemaining % 3600 / 60
-        msg += ('Time until quota reset:')
+        msg += 'Time until quota reset:'
         if daysRemaining > 0:
-            msg += (' %d days' %
-                (daysRemaining))
+            msg += ' %d days' % daysRemaining
         if hoursRemaining > 0:
-            msg += (' %d hours' %
-                (hoursRemaining))
+            msg += ' %d hours' % hoursRemaining
         if minutesRemaining > 0:
-            msg += (' %d minutes' %
-                (minutesRemaining))
+            msg += ' %d minutes' % minutesRemaining
 
         return msg
 
@@ -165,7 +161,7 @@ class FreedomPop(object):
     def action_get_sms(self, **kwargs):
         endpoint = '/phone/listsms'
         response = self._make_request(endpoint)
-        
+
         msg = 'Reading sms...\n'
         for sms in response['messages']:
             msg += '\n\nFrom: %s\n' % sms['from']

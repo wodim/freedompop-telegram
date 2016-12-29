@@ -1,0 +1,30 @@
+FreedomPop bot for Telegram
+===========================
+
+This bot is intended to be used as a replacement of the FreedomPop app.
+It can't do many things yet, but pull requests are welcome.
+
+Unlike many other bots, this one is meant to be run by you, and once it is
+running, you're the only one who is supposed to have access to it.
+
+
+Installation instructions
+-------------------------
+
+You need to have Python 3.5 to run it, and you also need to install the
+required PyPI packages listed in requirements.txt:
+    $ pip3.5 install -r requirements.txt
+
+Make a copy of config.py.example and call it config.py.
+
+Talk to the @BotFather on Telegram and create a new bot. You'll get a
+Telegram token, put it in config.py, along with your FreedomPop user
+information.
+
+Once you're done, you need to run the bot to use it:
+    $ python3.5 run.py
+
+Then go to your Telegram client, open a private conversation with the bot
+you created, and type /help. You'll get an "access denied" message, along
+with your user id. Put your user id in the config file (replacing the user
+ids that are there as an example) then restart the bot.

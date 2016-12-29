@@ -1,11 +1,17 @@
-# telegram
+# telegram token obtained from @BotFather
 TELEGRAM_TOKEN = ''
-ALLOWED_USERS = {123456789}
 
-# freedompop
+# list of telegram users allowed to use the bot, comma-separated.
+ALLOWED_USERS = 123456789, 987654321
+
+# your freedompop email/password.
 FREEDOMPOP_USER = ''
 FREEDOMPOP_PASSWORD = ''
 
+# device id for this client. just make something up.
+FREEDOMPOP_DEVICE_ID = 'lalala'
+
+# don't touch these.
 FREEDOMPOP_API_USER = '3726328870'
 FREEDOMPOP_API_PASSWORD = 'pNp6TIgVm4viVadoyoUdxbsrfmiBwudN'
 FREEDOMPOP_APP_VERSION = 'fm.19.01.460.0309'

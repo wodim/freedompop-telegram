@@ -12,7 +12,6 @@ r_h('balance', 'plan balance information', freedompop.action_get_balance)
 r_h('readsms', 'read your texts', freedompop.action_get_sms)
 r_h('sendsms', 'send texts', freedompop.action_send_sms,
     ('destination', 'text'))
-
-utils.logger.info('Connecting to Telegram...')
+r_h('getsipdata', 'get your SIP credentials', freedompop.action_get_sip_data)
 
 telegram_bot.run()
