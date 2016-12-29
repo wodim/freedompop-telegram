@@ -182,6 +182,7 @@ class FreedomPop(object):
     def action_send_sms(self, **kwargs):
         endpoint = '/phone/sendsms'
         destination, text = kwargs['destination'], kwargs['text']
+        text = text.encode('iso-8859-15', errors='ignore')
         data = {'to_numbers': destination, 'message_body': text}
         files = {'media_file': (None, 'none')}
 
