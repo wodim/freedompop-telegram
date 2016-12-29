@@ -114,18 +114,10 @@ class FreedomPop(object):
                 (utils.b_to_mb(used), percent_used,
                  utils.b_to_mb(total_limit)))
 
-        endTime = response['endTime'] / 1000
-        timeRemaining = endTime - time.time()
-        daysRemaining = timeRemaining / 86400
-        hoursRemaining = timeRemaining % 86400 / 3600
-        minutesRemaining = timeRemaining % 3600 / 60
-        msg += 'Time until quota reset:'
-        if daysRemaining > 0:
-            msg += ' %d days' % daysRemaining
-        if hoursRemaining > 0:
-            msg += ' %d hours' % hoursRemaining
-        if minutesRemaining > 0:
-            msg += ' %d minutes' % minutesRemaining
+        end_time = response['endTime'] / 1000
+        time_remaining = end_time - time.time()
+        msg += 'Time until quota reset: '
+        msg += utils.format_seconds(time_remaining)
 
         return msg
 

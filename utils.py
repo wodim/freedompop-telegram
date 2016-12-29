@@ -34,6 +34,20 @@ def s_to_m(s):
     return s // 60
 
 
+def format_seconds(seconds, sep=' '):
+    ret = []
+    days = seconds / 86400
+    hours = seconds % 86400 / 3600
+    minutes = seconds % 3600 / 60
+    if days:
+        ret.append('%dd' % days)
+    if hours:
+        ret.append('%dh' % hours)
+    if minutes:
+        ret.append('%dm' % minutes)
+    return sep.join(ret)
+
+
 def zip_args(keys, values):
     """given a list of keys and a list of values where len(values) >= len(keys)
         zips them into a dictionary, merging the last elements of "values" into
