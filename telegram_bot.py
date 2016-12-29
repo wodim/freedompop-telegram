@@ -35,6 +35,8 @@ class TelegramBot(telepot.aio.Bot):
             utils.logger.info(msg)
 
             # if this user is not among the allowed ones to use the bot...
+            if isinstance(config.ALLOWED_USERS, int):
+                config.ALLOWED_USERS = (config.ALLOWED_USERS,)
             if chat_id not in config.ALLOWED_USERS:
                 utils.logger.info('Access denied for user %d.', chat_id)
                 msg = self.UNKNOWN_USER % chat_id
