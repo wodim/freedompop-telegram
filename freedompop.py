@@ -7,6 +7,10 @@ import config
 import utils
 
 
+class FreedomPopAPIError(Exception):
+    pass
+
+
 class FreedomPop(object):
     username = None
     password = None
@@ -56,21 +60,24 @@ class FreedomPop(object):
         utils.logger.info('New token obtained successfully.')
 
     def _make_request(self, endpoint, params=None, method='GET', data=None,
-                      files=None):
+                      files=None, config_params=None):
         if method not in {'GET', 'POST'}:
             raise ValueError('method not supported: %s' % method)
         if method != 'POST' and (data is not None or files is not None):
             raise ValueError('cannot post files/data with method %s' % method)
         if not params:
             params = {}
+        if not config_params:
+            config_params = []
 
         self._update_token()
 
         url = self.api_base + endpoint
         auth = config.FREEDOMPOP_API_USER, config.FREEDOMPOP_API_PASSWORD
         params['accessToken'] = self.access_token
-        params['appIdVersion'] = config.FREEDOMPOP_APP_VERSION
-        if endpoint == '/phone/device/config':
+        if 'appIdVersion' in config_params:
+            params['appIdVersion'] = config.FREEDOMPOP_APP_VERSION
+        if 'deviceId' in config_params:
             params['deviceId'] = config.FREEDOMPOP_DEVICE_ID
 
         utils.logger.info('Making a %s request to %s...', method, endpoint)
@@ -84,11 +91,22 @@ class FreedomPop(object):
 
         utils.logger.info('Request finished.')
 
-        return json.loads(response.content.decode('utf8'))
+        try:
+            ret = json.loads(response.content.decode('utf8'))
+        except JSONDecodeError:
+            raise FreedomPopAPIError('Error decoding JSON response')
+
+        if 'error' in ret:
+            msg = 'Error calling the FreedomPop API:\n'
+            msg += ret['error_description']
+            raise FreedomPopAPIError(msg)
+
+        return ret
 
     def action_get_sip_data(self, **kwargs):
         endpoint = '/phone/device/config'
-        response = self._make_request(endpoint)
+        config_params = ('deviceId')
+        response = self._make_request(endpoint, config_params=config_params)
 
         msg = 'SIP data information: \n\n'
         msg += 'Username:\n%s\n\n' % response['username']
@@ -123,7 +141,8 @@ class FreedomPop(object):
 
     def action_get_balance(self, **kwargs):
         endpoint = '/phone/balance'
-        response = self._make_request(endpoint)
+        config_params = ('appIdVersion')
+        response = self._make_request(endpoint, config_params=config_params)
 
         msg = 'Plan balance information:\n\n'
         for plan in response:

@@ -5,6 +5,7 @@ import telepot
 import telepot.aio
 
 import config
+from freedompop import FreedomPopAPIError
 import utils
 
 
@@ -60,7 +61,10 @@ class TelegramBot(telepot.aio.Bot):
                     msg += 'Usage: /%s %s' % (command, req_args)
                 else:
                     kwargs = utils.zip_args(req, args)
-                    msg = self.handlers[command]['func'](**kwargs)
+                    try:
+                        msg = self.handlers[command]['func'](**kwargs)
+                    except FreedomPopAPIError as exc:
+                        msg = str(exc)
             else:
                 msg = self.INVALID_CMD
             await self.send_message(inc_message, msg, no_preview=True)
