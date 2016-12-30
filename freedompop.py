@@ -119,7 +119,7 @@ class FreedomPop(object):
 
         try:
             ret = json.loads(response.content.decode('utf8'))
-        except JSONDecodeError:
+        except json.JSONDecodeError:
             raise FreedomPopAPIError('Error decoding JSON response')
 
         if 'error' in ret:
@@ -158,21 +158,24 @@ class FreedomPop(object):
         msg += 'Last Name: %s\n' % response['lastName']
         msg += 'e-mail: %s\n' % response['email']
         msg += 'Plan: "%s"\n' % response['voiceplan']['name']
-        msg += 'Price: %.2f €\n' % response['voiceplan']['price']
+        msg += 'Price: %.2f\n' % response['voiceplan']['price']
         if response['voiceplan']['unlimitedVoice']:
             msg += 'Unlimited calls\n'
         else:
-            msg += 'Base minutes: %d\n' % utils.s_to_m(response['voiceplan']['baseSeconds'])
+            msg += ('Base minutes: %d\n' %
+                    utils.s_to_m(response['voiceplan']['baseSeconds']))
         if response['voiceplan']['unlimitedText']:
             msg += 'Unlimited SMS\n'
         else:
             msg += 'Base SMS: %d\n' % response['voiceplan']['baseSMS']
-        msg += '\nDays until billing date: %d\n' % response['daysUntilBillingDate']
+        msg += ('\nDays until billing date: %d\n' %
+                response['daysUntilBillingDate'])
         for sim in response['accounts']:
             msg += '\nSIM Id: %s\n' % sim['accountId']
             msg += 'SIM name: %s\n' % sim['accountName']
             msg += 'Phone number: %s\n' % sim['phoneNumber']
-        msg += '\nAccount is %s\n' % response['accountStatusAndMessage']['status']
+        msg += ('\nAccount is %s\n' %
+                response['accountStatusAndMessage']['status'])
         msg += '"%s"\n' % response['accountStatusAndMessage']['message']
 
         return msg
@@ -231,14 +234,35 @@ class FreedomPop(object):
 
         return msg
 
-    def action_get_sms(self, **kwargs):
+    def action_list_sms(self, **kwargs):
         endpoint = '/phone/listsms'
         response = self._make_request(endpoint)
 
-        msg = 'Reading sms...\n'
-        for sms in response['messages']:
-            msg += '\n\nFrom: %s\n' % sms['from']
-            msg += '%s' % sms['body']
+        messages = response['messages']
+        if messages:
+            msg = 'Received SMS:\n'
+            for message in messages:
+                msg += '\n\nFrom: %s\n' % message['from']
+                msg += '%s' % message['body']
+        else:
+            msg = "You don't have any SMS."
+
+        return msg
+
+    def action_list_calls(self, **kwargs):
+        endpoint = '/phone/calls'
+        params = {'startDate': 0, 'endDate': int(time.time()),
+                  'includeOutgoing': 1, 'includeIncoming': 1}
+        response = self._make_request(endpoint, params=params)
+
+        calls = response['calls']
+        if calls:
+            msg = 'Received calls:\n'
+            for call in response['calls']:
+                pass  # TODO
+        else:
+            msg = "You don't have any calls."
+
         return msg
 
     def action_send_sms(self, **kwargs):
@@ -276,10 +300,13 @@ class FreedomPop(object):
         params = {'usePV': use_pv}
         response = self._make_request(endpoint, params=params, method='PUT')
 
-        if use_pv:
-            msg = 'Premium Voice is now enabled.'
+        if response['isSuccess']:
+            if use_pv:
+                msg = 'Premium Voice is now enabled.'
+            else:
+                msg = 'Premium Voice is now disabled.'
         else:
-            msg = 'Premium Voice is now disabled.'
+            raise FreedomPopAPIError('Error setting your call preferences')
 
         return msg
 
