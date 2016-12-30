@@ -153,9 +153,29 @@ class FreedomPop(object):
         endpoint = '/phone/account/info'
         response = self._make_request(endpoint)
 
-        # TODO: requires formatting.
+        msg = 'Account information:\n\n'
+        msg += 'First Name: %s\n' % response['firstName']
+        msg += 'Last Name: %s\n' % response['lastName']
+        msg += 'e-mail: %s\n' % response['email']
+        msg += 'Plan: "%s"\n' % response['voiceplan']['name']
+        msg += 'Price: %.2f €\n' % response['voiceplan']['price']
+        if response['voiceplan']['unlimitedVoice']:
+            msg += 'Unlimited calls\n'
+        else:
+            msg += 'Base minutes: %d\n' % utils.s_to_m(response['voiceplan']['baseSeconds'])
+        if response['voiceplan']['unlimitedText']:
+            msg += 'Unlimited SMS\n'
+        else:
+            msg += 'Base SMS: %d\n' % response['voiceplan']['baseSMS']
+        msg += '\nDays until billing date: %d\n' % response['daysUntilBillingDate']
+        for sim in response['accounts']:
+            msg += '\nSIM Id: %s\n' % sim['accountId']
+            msg += 'SIM name: %s\n' % sim['accountName']
+            msg += 'Phone number: %s\n' % sim['phoneNumber']
+        msg += '\nAccount is %s\n' % response['accountStatusAndMessage']['status']
+        msg += '"%s"\n' % response['accountStatusAndMessage']['message']
 
-        return 'Not implemented yet.'
+        return msg
 
     def action_get_usage(self, **kwargs):
         endpoint = '/user/usage'
