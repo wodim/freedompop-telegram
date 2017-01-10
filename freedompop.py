@@ -54,6 +54,9 @@ class FreedomPop(object):
             response = requests.post(url, auth=auth, params=params)
             data = json.loads(response.content.decode('utf8'))
 
+        if 'error' in data:
+            raise FreedomPopAPIError(data['error_description'])
+
         self.access_token = data['access_token']
         self.refresh_token = data['refresh_token']
         self.token_expires = time.time() + int(data['expires_in'])
