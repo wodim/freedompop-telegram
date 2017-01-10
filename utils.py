@@ -1,4 +1,5 @@
 import logging
+import gnupg
 
 
 class Logger(object):
@@ -65,3 +66,19 @@ def zip_args(keys, values):
         values[offset:] = [' '.join(values[offset:])]
 
     return dict(zip(keys, values))
+
+
+class crypter(object):    
+    def __init__(self):
+        self.gpg = gnupg.GPG()
+
+
+    def import_public_key(self, file):
+        key_data = open(file).read()
+        import_result = self.gpg.import_keys(key_data)
+        
+    def obtain_password(self, file, passphrase):
+        encrypted_string = open(file, 'rb').read()
+        decrypted_data = self.gpg.decrypt(encrypted_string,passphrase=passphrase)
+        #print('Voy a desencriptar con el passphrase'+passphrase)
+        return decrypted_data.data
