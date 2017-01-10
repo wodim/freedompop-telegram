@@ -9,8 +9,8 @@ utils.logger.info('Initialising bot...')
 r_h = telegram_bot.telegram_bot.register_handler
 # name, desc, func, req
 if config.FREEDOMPOP_PASSWORD_USE_ENCRYPTION:
-	r_h('credentials', 'specify the passphrase for the GPG key', 
-		freedompop.set_passphrase, ('passphrase',))
+    r_h('credentials', 'specify the passphrase for the GPG key',
+        freedompop.set_passphrase, ('passphrase',))
 r_h('usage', 'data usage information', freedompop.action_get_usage)
 r_h('balance', 'plan balance information', freedompop.action_get_balance)
 r_h('readsms', 'read your SMS', freedompop.action_list_sms)

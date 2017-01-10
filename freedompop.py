@@ -38,12 +38,14 @@ class FreedomPop(object):
 
         if self.refresh_token is None:
             if config.FREEDOMPOP_PASSWORD_USE_ENCRYPTION:
-                crypter = utils.crypter();
+                crypter = utils.Crypter()
                 self.password = crypter.obtain_password(
                     config.FREEDOMPOP_PASSWORD_GPG_FILE,
                     self.passphrase
                 )
-                crypter.import_public_key(config.FREEDOMPOP_PASSWORD_PUBLIC_KEY)
+                crypter.import_public_key(
+                    config.FREEDOMPOP_PASSWORD_PUBLIC_KEY
+                )
             else:
                 self.password = config.FREEDOMPOP_PASSWORD
 
@@ -54,7 +56,8 @@ class FreedomPop(object):
                       'password': self.password}
             response = requests.post(url, auth=auth, params=params)
             data = json.loads(response.content.decode('utf8'))
-            self.password = None # The references are no longer in use. Destroy them.
+            # The references are no longer in use. Destroy them.
+            self.password = None
             self.passphrase = None
         else:
             # there's a refresh_token, use it to regenerate the access_token
@@ -141,7 +144,6 @@ class FreedomPop(object):
             raise FreedomPopAPIError(msg)
 
         return ret
-
 
     def set_passphrase(self, **kwargs):
         self.passphrase = kwargs['passphrase']
