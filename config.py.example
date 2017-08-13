@@ -6,16 +6,18 @@ ALLOWED_USERS = 123456789, 987654321
 
 # your freedompop email.
 FREEDOMPOP_USER = ''
-FREEDOMPOP_PASSWORD = ''
+
 # your freedompop password. In this case you have two options:
 # 1) Provide a plain text password
 # 2) Provide an encrypted file
 FREEDOMPOP_PASSWORD_USE_ENCRYPTION = False
-# If FREEDOMPOP_PASSWORD_USE_ENCRYPTION=false, fill the following field with your password
+
+# if FREEDOMPOP_PASSWORD_USE_ENCRYPTION == False, fill the following field with
+# your password in plain text:
 FREEDOMPOP_PASSWORD = ''
-# In any other case, provide a public key file (extension .asc)
-# and the encrypted file (one line with the correspondent password )
-FREEDOMPOP_PASSWORD_GPG_FILE   = ''
+# else, if you want to use encryption, provide a public key file in .asc format
+# and the encrypted file (just one line with the correspondent password)
+FREEDOMPOP_PASSWORD_GPG_FILE = ''
 FREEDOMPOP_PASSWORD_PUBLIC_KEY = ''
 
 # device ids for this client. just make something up.
